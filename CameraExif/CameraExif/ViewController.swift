@@ -39,6 +39,8 @@ class ViewController: UIViewController {
         imagePicker.sourceType = sourceType
         imagePicker.modalPresentationStyle = .fullScreen
         present(imagePicker, animated: true, completion: nil)
+        
+        exifImageDataLabel.text = "사진의 날짜 데이터가 없습니다."
     }
     
     func galleryButtonClicked() {
@@ -77,14 +79,18 @@ extension ViewController: UIImagePickerControllerDelegate & UINavigationControll
             return nil
         }
         
+        let format = "yyyy-MM-dd HH:mm:ss"
+        return makeExitDate(of: dateTimeOriginal, by: format)
+    }
+    
+    func makeExitDate(of dateTimeOriginal: String, by format: String) -> Date? {
         let dateOfFirstSection = String(dateTimeOriginal.split(separator: " ").first ?? "")
         let dateOfSecondSection = String(dateTimeOriginal.split(separator: " ").last ?? "")
         var exitDate = dateOfFirstSection.replacingOccurrences(of: ":", with: "-")
         exitDate = exitDate + " " + dateOfSecondSection
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        dateFormatter.dateFormat = format
         dateFormatter.date(from: exitDate)
-        print(exitDate)
         return Date()
     }
 }
