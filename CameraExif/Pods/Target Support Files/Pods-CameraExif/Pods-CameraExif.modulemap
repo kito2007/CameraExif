@@ -1,0 +1,6 @@
+framework module Pods_CameraExif {
+  umbrella header "Pods-CameraExif-umbrella.h"
+
+  export *
+  module * { export * }
+}
