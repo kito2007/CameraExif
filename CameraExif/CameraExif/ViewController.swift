@@ -1,13 +1,7 @@
-//
-//  ViewController.swift
-//  CameraExif
-//
-//  Created by Eunjin on 05/03/2020.
-//  Copyright © 2020 Eunjin. All rights reserved.
-//
-
 import UIKit
 import Photos
+import CryptoSwift
+import SwiftyRSA
 
 class ViewController: UIViewController {
 
@@ -16,8 +10,21 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
     }
 
+    @IBAction func clickedEncryptButton(_ sender: Any) {
+        var str : String = self.exifImageDataLabel.text as! String ?? ""
+        
+        let publicKey = try! PublicKey(pemNamed: "key.pem")
+        let clear = try! ClearMessage(string: str, using: .utf8)
+        let encrypted = try! clear.encrypted(with: publicKey, padding: .PKCS1)
+
+        let data = encrypted.data
+        let base64String = encrypted.base64String
+        
+    }
+    
     @IBAction func buttonClicked(_ sender: Any) {
         let alert = UIAlertController()
         alert.addAction(UIAlertAction(title: "사진 앨범", style: .default, handler: { _ in self.galleryButtonClicked() }))
@@ -51,6 +58,11 @@ class ViewController: UIViewController {
         makeImagePicker(by: .camera)
     }
     
+    func AES(str: String){
+        let key: String = "0123456789012345"
+        //let plain :NSData = str.data(using: String.Encoding)
+    }
+    
 }
 
 extension ViewController: UIImagePickerControllerDelegate & UINavigationControllerDelegate {
@@ -58,6 +70,8 @@ extension ViewController: UIImagePickerControllerDelegate & UINavigationControll
         guard let image = info[.originalImage] as? UIImage else { return }
         exifImageView.image = image
         if let date = self.getCreateDate(by: info) {
+            print("확인용")
+            print(date)
             self.exifImageDataLabel.text = date.toString()
         }
         dismiss(animated: true, completion: nil)
@@ -74,7 +88,9 @@ extension ViewController: UIImagePickerControllerDelegate & UINavigationControll
         guard let url = info[.imageURL] as? NSURL else { return nil }
         guard let imageSource = CGImageSourceCreateWithURL(url, nil) else { return nil }
         let imageProperties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil) as Dictionary?
+        print(imageProperties)
         let exifDict = imageProperties?[kCGImagePropertyExifDictionary]
+        
         guard let dateTimeOriginal = exifDict?[kCGImagePropertyExifDateTimeOriginal] as? String else {
             return nil
         }
@@ -101,4 +117,13 @@ extension Date {
         dateFormatter.dateStyle = .full
         return dateFormatter.string(from: self)
     }
+}
+
+extension String {
+  func rsaEncryption(publicKey: String) -> String {
+    let publicKey = try! PublicKey(base64Encoded: publicKey)
+    let clear = try! ClearMessage(string: self, using: .utf8)
+    let encrypted = try! clear.encrypted(with: publicKey, padding: .PKCS1)
+    return encrypted.base64String
+  }
 }
